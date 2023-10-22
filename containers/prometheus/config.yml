@@ -24,5 +24,5 @@ scrape_configs:
       - targets: ['monitor_app:8003']
   - job_name: 'bookinfo'
     static_configs:
-      - targets: ['34.18.36.195:9080']
+      - targets: ['34.18.66.11:9080']
 
