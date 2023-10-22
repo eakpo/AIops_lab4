@@ -1,0 +1,63 @@
+version: "3.6"
+services:
+  app_one:
+    container_name: "app_one"
+    build: "./containers/app_one"
+    ports:
+      - "8000:8000"
+
+  app_two:
+    container_name: "app_two"
+    build: "./containers/app_two"
+    ports:
+      - "8001:8001"
+    environment:
+      DOCKER_NETWORK: push_gateway:9091
+
+  prometheus:
+    container_name: "prometheus"
+    build: "./containers/prometheus"
+    ports:
+      - "9090:9090"
+  grafana:
+    container_name: "grafana"
+    build: "./containers/grafana"
+    ports:
+      - "3000:3000"
+  node_exporter:
+    container_name: "prometheus_node_exporter"
+    image: "quay.io/prometheus/node-exporter"
+    ports:
+      - "9100:9100"
+  push_gateway:
+    container_name: "prometheus_push_gateway"
+    image: "prom/pushgateway"
+    ports:
+      - "9091:9091"
+
+  postgres:
+    container_name: "postgres"
+    image: postgres:13.3
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: example
+  postgres_exporter:
+    container_name: "postgres_exporter"
+    image: "wrouesnel/postgres_exporter"
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:example@postgres:5432/postgres?sslmode=disable"
+    depends_on:
+      - postgres
+
+  monitor_app:
+    container_name: "monitor_app"
+    command: ["python", "read.py", "-t30000", "-T120", "-f5", "-w120"]
+    image: "eugeniaakpo/aiops_lab3:latest"
+    build: "./containers/monitor_app" # Path to the Dockerfile of your monitor application
+    tty: true
+    ports:
+      - "8003:8003" # Expose the port your monitor application is running on
